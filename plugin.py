@@ -9,7 +9,7 @@
         <param field="Mode2" label="IP Domoticz" width="150px" default="192.168.1.100" />
         <param field="Mode3" label="Port Domoticz" width="100px" default="8080" />
         <param field="Mode4" label="Nom du calendrier" width="200px" default="Domoticz" />
-        <param field="Mode5" label="URL CalDAV" width="300px" default="https://lawachefamilyhome.synology.me:65001/caldav/Fredoun" />
+        <param field="Mode5" label="URL CalDAV" width="300px" default="" />
         <param field="Mode6" label="Debug" width="150px">
             <options>
                 <option label="None" value="0" default="true" />
