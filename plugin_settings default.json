@@ -1,0 +1,10 @@
+{
+  "domoticz": {
+    "login": "login domoticz",
+    "password": "mot de passe domoticz"
+  },
+  "caldav": {
+    "login": "login caldav",
+    "password": "mot de passe caldav"
+  }
+}

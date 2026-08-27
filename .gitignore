@@ -1,0 +1,39 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+**/.venv/
+**/venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Local secrets / runtime config
+plugins/**/plugin_settings.json
+plugins/**/secrets.json
+plugins/**/local_settings.json
+*.local
+*.secret
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Keep project config tracked, but ignore runtime plugin caches
+__pycache__/

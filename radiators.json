@@ -1,0 +1,32 @@
+{
+  "radiators": {
+    "cuisine": {
+      "default_mode": "ECO",
+      "domoticz_device": "Radiateur cuisine"
+    },
+    "auxence": {
+      "default_mode": "ECO",
+      "domoticz_device": "Radiateur auxence"
+    },
+    "maximilien": {
+      "default_mode": "ECO",
+      "domoticz_device": "Radiateur maximilien"
+    },
+    "romeo": {
+      "default_mode": "ECO",
+      "domoticz_device": "Radiateur romeo"
+    },
+    "sdb etage": {
+      "default_mode": "HORS GEL",
+      "domoticz_device": "Radiateur sdb etage"
+    },
+    "parents": {
+      "default_mode": "ECO",
+      "domoticz_device": "Radiateur parents"
+    },
+    "sdb rdc": {
+      "default_mode": "HORS GEL",
+      "domoticz_device": "Radiateur sdb rdc"
+    }
+  }
+}
