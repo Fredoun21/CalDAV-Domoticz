@@ -136,6 +136,9 @@ class BasePlugin:
         return name.strip().lower().replace("radiateur ", "").replace("radiateur", "").strip()
 
     def get_radiator_config(self, radiator_name):
+        """Retourne la configuration d'un radiateur à partir de son nom.
+        Si le radiateur n'est pas trouvé, retourne une configuration par défaut.
+        """
         normalized = self.normalize_radiator_name(radiator_name)
         for key, config in RADIATOR_CONFIG.items():
             if normalized == self.normalize_radiator_name(key):
@@ -146,6 +149,10 @@ class BasePlugin:
 
     @staticmethod
     def normalize_mode_name(mode):
+        """Normalise le nom d'un mode pour comparaison.
+        Convertit en minuscules, supprime les tirets et underscores,
+        et remplace les variantes françaises par des équivalents anglais.
+        """
         if mode is None:
             return None
         normalized = mode.strip().lower().replace('-', ' ').replace('_', ' ')
@@ -195,6 +202,7 @@ class BasePlugin:
             Domoticz.Log("CalDAVHeater plugin stopped")
 
     def onHeartbeat(self):
+        """Appelé périodiquement en fonction de l'intervalle de temps configuré."""
         interval_minutes = int(Parameters.get("Mode1", "5") or 5)
         now = datetime.now()
         if self.last_run is None or (now - self.last_run).total_seconds() >= interval_minutes * 60:
@@ -207,6 +215,7 @@ class BasePlugin:
             self.last_run = now
 
     def get_domoticz_auth(self):
+        """Retourne les credentials HTTP pour Domoticz, si configurés."""
         settings = PLUGIN_SETTINGS.get("domoticz", {})
         username = settings.get("login", "").strip()
         password = settings.get("password", "").strip()
@@ -230,6 +239,25 @@ class BasePlugin:
         if host in ("127.0.0.1", "localhost"):
             return None
         return auth
+
+    @staticmethod
+    def is_device_off(device):
+        """Vrai si le périphérique Domoticz est actuellement à l'état Arrêt."""
+        if device is None:
+            return False
+
+        status = str(device.get("Status", "")).strip().lower()
+        data = str(device.get("Data", "")).strip().lower()
+        level = device.get("Level")
+
+        if status == "off" or data == "off":
+            return True
+        if level is not None:
+            try:
+                return int(level) == 0
+            except (TypeError, ValueError):
+                pass
+        return False
 
     def process(self):
         """Méthode principal du plugin.
@@ -296,6 +324,11 @@ class BasePlugin:
             chosen_mode = radiator_config.get("default_mode", "ECO")
             chosen_level = self.resolve_radiator_level(device_name, chosen_mode)
 
+            if self.is_device_off(device):
+                self.log_debug(f"Radiateur {raw_device_name} est OFF -> on conserve l'arrêt")
+                final_states.append((raw_device_name, "OFF", 0))
+                continue
+
             for event in events_list:
                 nom_radiateur, mode = self.parse_radiateur_info(event["name"])
                 normalized_nom = self.normalize_radiator_name(nom_radiateur)
@@ -347,6 +380,9 @@ class BasePlugin:
             return None
 
     def caldav_event_search_to_json(self, calendar, target_date):
+        """Recherche les événements CalDAV pour une date cible et retourne une liste de dictionnaires.
+        Chaque dictionnaire contient les clés : name, date, start, end, duration.
+        """
         try:
             start_date = target_date
             end_date = datetime.combine(target_date.date(), time.max)
@@ -374,6 +410,9 @@ class BasePlugin:
             return []
 
     def domoticz_get_devices(self, base_url, devices_filter="light"):
+        """Récupère la liste des périphériques Domoticz filtrés par type.
+        Retourne un dictionnaire JSON avec les périphériques ou None en cas d'erreur.
+        """
         params = {
             "type": "command",
             "param": "getdevices",
@@ -396,8 +435,7 @@ class BasePlugin:
             if response.status_code == 200:
                 return response.json()
             if response.status_code == 401 and auth is not None:
-                if Domoticz is not None:
-                    Domoticz.Log("401 sur Domoticz local : nouvelle tentative sans authentification HTTP")
+                self.log_debug("401 sur Domoticz local : nouvelle tentative sans authentification HTTP")
                 response = requests.get(
                     base_url,
                     params=params,
@@ -406,6 +444,9 @@ class BasePlugin:
                 )
                 if response.status_code == 200:
                     return response.json()
+            if response.status_code == 401:
+                self.log_debug(f"Authentification HTTP refusée par Domoticz ({response.status_code})")
+                return None
             if Domoticz is not None:
                 Domoticz.Error(f"Erreur getdevices: {response.status_code} - {response.text}")
             return None
@@ -452,14 +493,16 @@ class BasePlugin:
                 timeout=20,
             )
             if response.status_code == 401 and auth is not None:
-                if Domoticz is not None:
-                    Domoticz.Log("401 sur commande Domoticz local : nouvelle tentative sans authentification HTTP")
+                self.log_debug("401 sur commande Domoticz local : nouvelle tentative sans authentification HTTP")
                 response = requests.get(
                     base_url,
                     params=params,
                     auth=None,
                     timeout=20,
                 )
+            if response.status_code == 401:
+                self.log_debug(f"Commande Domoticz refusée ({response.status_code}) pour {radiateur_name}")
+                return False
             if response.status_code == 200 and response.json().get("status") == "OK":
                 if Domoticz is not None:
                     self.log_info(f"Radiateur {radiateur_name} => niveau {level}")
