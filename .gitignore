@@ -13,9 +13,9 @@ __pycache__/
 *.pyd
 
 # Local secrets / runtime config
-plugins/**/plugin_settings.json
-plugins/**/secrets.json
-plugins/**/local_settings.json
+plugin_settings.json
+secrets.json
+local_settings.json
 *.local
 *.secret
 
