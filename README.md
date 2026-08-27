@@ -76,11 +76,11 @@ Exemple :
 ```json
 {
   "domoticz": {
-    "login": "fredoun21",
+    "login": "login",
     "password": "votre_mot_de_passe_domoticz"
   },
   "caldav": {
-    "login": "fredoun",
+    "login": "login",
     "password": "votre_mot_de_passe_caldav"
   }
 }
